@@ -400,7 +400,7 @@ async function run() {
 
       const deleteResult = await cartCollection.deleteMany(query);
      
-      res.redirect("http://localhost:5000/success");
+      res.redirect("http://localhost:5173/dashboard/paymentHistory");
     });
     // ssl payment operation ends ----------->
   } finally {
