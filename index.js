@@ -366,6 +366,7 @@ async function run() {
         },
       });
       const saveData = await paymentCollection.insertOne(paymentInfo);
+      console.log('saveData=-->',saveData)
       const gatewayUrl = iniResponse?.data?.GatewayPageURL;
       res.send({ gatewayUrl, saveData });
     });
@@ -374,7 +375,7 @@ async function run() {
     app.post("/success-payment", async (req, res) => {
       const paymentSuccess = req.body;
       // VALIDED PAYMENT 00
-      const {data} = await axios.get(
+      const { data } = await axios.get(
         `https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php?val_id=${paymentSuccess.val_id}&store_id=${process.env.SSL_STORE_ID}&store_passwd=${process.env.SSL_STORE_PASSWORD}&format=json`
       );
       // update payment status
@@ -386,8 +387,20 @@ async function run() {
           },
         }
       );
+      // delete after pay
+      const payment = await paymentCollection.findOne({
+        transaction: data.tran_id,
+      });
+      console.log('cart collection',payment)
+      const query = {
+        _id: {
+          $in: payment. cartIds.map((id) => new ObjectId(id)),
+        },
+      };
 
-      console.log("isValidPayment", updatePayment);
+      const deleteResult = await cartCollection.deleteMany(query);
+     
+      res.redirect("http://localhost:5000/success");
     });
     // ssl payment operation ends ----------->
   } finally {
